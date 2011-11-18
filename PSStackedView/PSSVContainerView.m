@@ -11,8 +11,8 @@
 #import "UIView+PSSizes.h"
 
 #define kPSSVCornerRadius 6.f
-#define kPSSVShadowWidth 60.f
-#define kPSSVShadowAlpha 0.5f
+#define kPSSVShadowWidth 30.f
+#define kPSSVShadowAlpha 0.25f
 
 @interface PSSVContainerView ()
 @property(nonatomic, assign) CGFloat originalWidth;
