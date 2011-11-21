@@ -13,10 +13,10 @@
 
 #define kPSSVStackAnimationSpeedModifier 1.f // DEBUG!
 #define kPSSVStackAnimationDuration kPSSVStackAnimationSpeedModifier * 0.25f
-#define kPSSVStackAnimationBounceDuration kPSSVStackAnimationSpeedModifier * 0.20f
+#define kPSSVStackAnimationBounceDuration kPSSVStackAnimationSpeedModifier * 0.25f
 #define kPSSVStackAnimationPushDuration kPSSVStackAnimationSpeedModifier * 0.25f
 #define kPSSVStackAnimationPopDuration kPSSVStackAnimationSpeedModifier * 0.25f
-#define kPSSVMaxSnapOverOffset 20
+#define kPSSVMaxSnapOverOffset 7
 #define kPSSVAssociatedBaseViewControllerKey @"kPSSVAssociatedBaseViewController"
 
 // reduces alpha over overlapped view controllers. 1.f would totally black-out on complete overlay
