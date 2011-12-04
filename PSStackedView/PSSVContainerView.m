@@ -10,9 +10,15 @@
 #import "PSStackedViewGlobal.h"
 #import "UIView+PSSizes.h"
 
+#ifndef kPSSVCornerRadius
 #define kPSSVCornerRadius 6.f
+#endif
+#ifndef kPSSVShadowWidth
 #define kPSSVShadowWidth 30.f
+#endif
+#ifndef kPSSVShadowAlpha
 #define kPSSVShadowAlpha 0.25f
+#endif
 
 @interface PSSVContainerView ()
 @property(nonatomic, assign) CGFloat originalWidth;
