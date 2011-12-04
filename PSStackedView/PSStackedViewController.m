@@ -534,19 +534,19 @@ enum {
 - (void)updateViewControllerMasksAndShadow {   
     // only one!
     if ([self.viewControllers count] == 1) {
-        //    [[self firstViewController].containerView addMaskToCorners:UIRectCornerAllCorners];
+        [[self firstViewController].containerView addMaskToCorners:UIRectCornerAllCorners];
         self.firstViewController.containerView.shadow = PSSVSideLeft | PSSVSideRight;
     }else {
         // rounded corners on first and last controller
         [self.viewControllers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             UIViewController *vc = (UIViewController *)obj;
             if (idx == 0) {
-                //[vc.containerView addMaskToCorners:UIRectCornerBottomLeft | UIRectCornerTopLeft];
+                [vc.containerView addMaskToCorners:UIRectCornerBottomLeft | UIRectCornerTopLeft];
             }else if(idx == [self.viewControllers count]-1) {
-                //        [vc.containerView addMaskToCorners:UIRectCornerBottomRight | UIRectCornerTopRight];
+                [vc.containerView addMaskToCorners:UIRectCornerBottomRight | UIRectCornerTopRight];
                 vc.containerView.shadow = PSSVSideLeft | PSSVSideRight;
             }else {
-                //      [vc.containerView removeMask];
+                [vc.containerView removeMask];
                 vc.containerView.shadow = PSSVSideLeft | PSSVSideRight;
             }
         }];
