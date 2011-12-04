@@ -876,8 +876,8 @@ enum {
     PSSVLog(@"container frame: %@", NSStringFromCGRect(container.frame));
     
     // relay willAppear and add to subview
-    [viewController viewWillAppear:animated];
-    
+    IF_PRE_IOS5([viewController viewWillAppear:animated];)
+
     if (animated) {
         container.alpha = 0.f;
         container.transform = CGAffineTransformMakeScale(1.2, 1.2); // large but fade in
@@ -1307,11 +1307,12 @@ enum {
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+
+    IF_PRE_IOS5(
     [self.rootViewController viewWillAppear:animated];
     for (UIViewController *controller in self.viewControllers) {
         [controller viewWillAppear:animated];
-    }
+    })
     
     // enlarge/shrinken stack
     [self updateViewControllerSizes];

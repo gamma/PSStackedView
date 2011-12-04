@@ -16,3 +16,10 @@ profile
 
 # osx noise
 .DS_Store
+.svn
+
+PSStackedView/PSStackedViewController.m
+
+.gitignore
+
+.gitignore
