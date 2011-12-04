@@ -84,6 +84,13 @@ typedef void(^PSSVSimpleBlock)(void);
     return self;
 }
 
+#ifdef ALLOW_SWIZZLING_NAVIGATIONCONTROLLER
+- (void)setNavigationBarHidden:(BOOL)hidden animated:(BOOL)animated
+{
+    
+}
+#endif
+
 - (void)dealloc {
     delegate_ = nil;
     panRecognizer_.delegate = nil;
