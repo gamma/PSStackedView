@@ -26,4 +26,10 @@
 /// viewController has been removed
 - (void)stackedView:(PSStackedViewController *)stackedView didRemoveViewController:(UIViewController *)viewController;
 
+/// viewController is now visible
+- (void)stackedView:(PSStackedViewController *)stackedView isNowVisibleViewController:(UIViewController *)viewController;
+
+/// viewController is now hidden
+- (void)stackedView:(PSStackedViewController *)stackedView isNowHiddenViewController:(UIViewController *)viewController;
+
 @end

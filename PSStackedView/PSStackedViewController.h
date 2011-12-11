@@ -44,6 +44,8 @@ enum {
         unsigned int delegateDidInsertViewController:1;
         unsigned int delegateWillRemoveViewController:1;
         unsigned int delegateDidRemoveViewController:1;        
+        unsigned int isNowVisibleViewController:1;        
+        unsigned int isNowHiddenViewController:1;        
     }delegateFlags_;
 }
 
