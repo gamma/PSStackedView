@@ -146,6 +146,7 @@
 }
 
 - (void)addMaskToCorners:(UIRectCorner)corners; {
+    return;
     // Re-calculate the size of the mask to account for adding/removing rows.
     CGRect frame = self.controller.view.bounds;
     if([self.controller.view isKindOfClass:[UIScrollView class]] && ((UIScrollView *)self.controller.view).contentSize.height > self.controller.view.frame.size.height) {

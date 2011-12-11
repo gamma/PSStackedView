@@ -32,6 +32,7 @@ typedef void(^PSSVSimpleBlock)(void);
 @property(nonatomic, assign) NSInteger firstVisibleIndex;
 @property(nonatomic, assign) CGFloat floatIndex;
 - (UIViewController *)overlappedViewController;
+- (void)handleVisibleChangeFromInitionalViewControllers:(NSArray *)initialControllers toFinalViewControllers:(NSArray *)finalViewControllers;
 @end
 
 @implementation PSStackedViewController
@@ -116,6 +117,8 @@ typedef void(^PSSVSimpleBlock)(void);
         delegateFlags_.delegateDidInsertViewController = [delegate respondsToSelector:@selector(stackedView:didInsertViewController:)];
         delegateFlags_.delegateWillRemoveViewController = [delegate respondsToSelector:@selector(stackedView:willRemoveViewController:)];
         delegateFlags_.delegateDidRemoveViewController = [delegate respondsToSelector:@selector(stackedView:didRemoveViewController:)];
+        delegateFlags_.isNowVisibleViewController = [delegate respondsToSelector:@selector(stackedView:isNowVisibleViewController:)];      
+        delegateFlags_.isNowHiddenViewController = [delegate respondsToSelector:@selector(stackedView:isNowHiddenViewController:)];
     }
 }
 
@@ -140,6 +143,18 @@ typedef void(^PSSVSimpleBlock)(void);
 - (void)delegateDidRemoveViewController:(UIViewController *)viewController {
     if (delegateFlags_.delegateDidRemoveViewController) {
         [self.delegate stackedView:self didRemoveViewController:viewController];
+    }
+}
+
+- (void)delegateIsNowVisibleViewController:(UIViewController *)viewController {
+    if (delegateFlags_.isNowVisibleViewController) {
+        [self.delegate stackedView:self isNowVisibleViewController:viewController];
+    }
+}
+
+- (void)delegateIsNowHiddenViewController:(UIViewController *)viewController {
+    if (delegateFlags_.isNowHiddenViewController) {
+        [self.delegate stackedView:self isNowHiddenViewController:viewController];
     }
 }
 
@@ -524,8 +539,8 @@ enum {
     UIViewController *overlappedVC = [self overlappedViewController];
     if (overlappedVC) {
         UIViewController *rightVC = [self nextViewController:overlappedVC];
-        PSSVLog(@"overlapping %@ with %@", NSStringFromCGRect(overlappedVC.containerView.frame), NSStringFromCGRect(rightVC.containerView.frame));
         overlapRatio = fabsf(overlappedVC.containerView.right - rightVC.containerView.left)/overlappedVC.containerView.width;
+        PSSVLog(@"overlapping %@ with %@ having ratio %.1f", NSStringFromCGRect(overlappedVC.containerView.frame), NSStringFromCGRect(rightVC.containerView.frame), overlapRatio);
     }
     return overlapRatio;
 }
@@ -619,6 +634,40 @@ enum {
     return overlappedViewController;
 }
 
+- (void)handleVisibleChangeFromInitionalViewControllers:(NSArray *)initialControllers toFinalViewControllers:(NSArray *)finalViewControllers
+{
+    PSSVLog(@"Check ViewController Amount was: %d / is now: %d", [initialControllers count], [finalViewControllers count] );
+    NSMutableArray *mutableFinalViewControllers = [finalViewControllers mutableCopy];
+    
+    // Enumerate all initial controllers and check if one is missing. If so, let the delegate know
+    [initialControllers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+        if ( ![obj isKindOfClass:[UIViewController class]] )
+        {
+            // Sanity
+            return;
+        }
+        if ( ![mutableFinalViewControllers containsObject:obj] )
+        {
+            [self delegateIsNowHiddenViewController:(UIViewController *)obj];
+        } else
+        {
+            [mutableFinalViewControllers removeObject:obj];
+        }
+    }];
+    
+    // Enumerate all remaining controllers and check if there are new ones. If so, let the delegate know
+    [mutableFinalViewControllers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+        if ( ![obj isKindOfClass:[UIViewController class]] )
+        {
+            // Sanity
+            return;
+        }
+        [self delegateIsNowVisibleViewController:(UIViewController *)obj];
+    }];
+    
+    [mutableFinalViewControllers release];
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - Touch Handling
 
@@ -638,7 +687,7 @@ enum {
     [self stopStackAnimation];
     [UIView animateWithDuration:animated ? kPSSVStackAnimationDuration : 0.f delay:0.f options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction animations:^{
         
-        // enumerate controllers from rig   ht to left
+        // enumerate controllers from right to left
         // scroll each controller until we begin to overlap!
         __block BOOL isTopViewController = YES;
         [self.viewControllers enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -727,9 +776,13 @@ enum {
     CGPoint translatedPoint = [recognizer translationInView:self.view];
     UIGestureRecognizerState state = recognizer.state;
     
+    static NSArray *initialVisibleViewControllers = nil;
+    
     // reset last offset if gesture just started
     if (state == UIGestureRecognizerStateBegan) {
         lastDragOffset_ = 0;
+
+        initialVisibleViewControllers = [[self visibleViewControllers] retain];
     }
     
     NSInteger offset = translatedPoint.x - lastDragOffset_;
@@ -786,6 +839,8 @@ enum {
         }
         
         [self alignStackAnimated:YES];
+        [self handleVisibleChangeFromInitionalViewControllers:initialVisibleViewControllers toFinalViewControllers:[self visibleViewControllers]];
+        [initialVisibleViewControllers release]; initialVisibleViewControllers = nil;
     }
 }
 
@@ -876,7 +931,10 @@ enum {
     PSSVLog(@"container frame: %@", NSStringFromCGRect(container.frame));
     
     // relay willAppear and add to subview
-    IF_PRE_IOS5([viewController viewWillAppear:animated];)
+    if ( self.view.window )
+    {
+        [viewController viewWillAppear:animated];
+    }
 
     if (animated) {
         container.alpha = 0.f;
@@ -896,6 +954,7 @@ enum {
     [container layoutIfNeeded];
     //container.width = viewController.view.width; // sync width (after it may has changed in layoutIfNeeded)
     
+    // relay didAppear and add to subview
     [viewController viewDidAppear:animated];
     [viewControllers_ addObject:viewController];
     
@@ -1000,6 +1059,7 @@ enum {
         [self popViewControllerAnimated:animated];
     }];
     
+    [self displayViewControllerOnRightMost:viewController animated:YES];
     return controllersToRemove;
 }
 
@@ -1140,7 +1200,7 @@ enum {
                  }
              }
              // snap the leftmost view controller
-             else if ((snapOverOffset > 0 && idx == firstVisibleIndex) || (snapOverOffset < 0 && (idx == firstVisibleIndex+1))
+             else if ((snapOverOffset > 0 && idx == firstVisibleIndex) || (snapOverOffset < 0 && (idx == firstVisibleIndex))
                       || [self.viewControllers count] == 1) {
                  frames = [self modifiedRects:frames newLeft:currentVC.containerView.left + snapOverOffset index:idx];
              }
