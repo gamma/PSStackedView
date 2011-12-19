@@ -719,6 +719,12 @@ enum {
                 leftViewController.containerView.left = leftVCLeftPosition;
             }
             
+            // Absolute minimum - we must not drag over the menu
+            if ( currentVCLeftPosition < self.leftInset && isTopViewController )
+            {
+                currentVCLeftPosition = self.leftInset;
+            }
+            
             currentViewController.containerView.left = currentVCLeftPosition;
             
             isTopViewController = NO; // there can only be one.
