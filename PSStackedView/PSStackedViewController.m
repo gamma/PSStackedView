@@ -117,7 +117,8 @@ typedef void(^PSSVSimpleBlock)(void);
         delegateFlags_.delegateDidInsertViewController = [delegate respondsToSelector:@selector(stackedView:didInsertViewController:)];
         delegateFlags_.delegateWillRemoveViewController = [delegate respondsToSelector:@selector(stackedView:willRemoveViewController:)];
         delegateFlags_.delegateDidRemoveViewController = [delegate respondsToSelector:@selector(stackedView:didRemoveViewController:)];
-        delegateFlags_.isNowVisibleViewController = [delegate respondsToSelector:@selector(stackedView:isNowVisibleViewController:)];      
+        delegateFlags_.isStillVisibleViewController = [delegate respondsToSelector:@selector(stackedView:isStillVisibleViewController:fullyVisible:)];
+        delegateFlags_.isNowVisibleViewController = [delegate respondsToSelector:@selector(stackedView:isNowVisibleViewController:)];
         delegateFlags_.isNowHiddenViewController = [delegate respondsToSelector:@selector(stackedView:isNowHiddenViewController:)];
     }
 }
@@ -143,6 +144,12 @@ typedef void(^PSSVSimpleBlock)(void);
 - (void)delegateDidRemoveViewController:(UIViewController *)viewController {
     if (delegateFlags_.delegateDidRemoveViewController) {
         [self.delegate stackedView:self didRemoveViewController:viewController];
+    }
+}
+
+- (void)delegateIsStillVisibleViewController:(UIViewController *)viewController fullyVisible:(BOOL)fullyVisible {
+    if (delegateFlags_.isStillVisibleViewController) {
+        [self.delegate stackedView:self isStillVisibleViewController:viewController fullyVisible:fullyVisible];
     }
 }
 
@@ -523,6 +530,9 @@ enum {
         self.floatIndex = 0.5f;
         [self alignStackAnimated:YES];
     }
+    
+    // Upgrade visiblity
+    [self handleVisibleChangeFromInitionalViewControllers:[self visibleViewControllers] toFinalViewControllers:[self visibleViewControllers]];
 }
 
 // iterates controllers and sets width (also, enlarges if requested width is larger than current width)
@@ -651,6 +661,11 @@ enum {
             [self delegateIsNowHiddenViewController:(UIViewController *)obj];
         } else
         {
+            if ( [self isViewControllerVisible:(UIViewController *)obj completely:NO] )
+            {
+                BOOL fullyVisible = [self isViewControllerVisible:obj completely:YES] && ![[self overlappedViewController] isEqual:obj];
+                [self delegateIsStillVisibleViewController:(UIViewController *)obj fullyVisible:fullyVisible];
+            }
             [mutableFinalViewControllers removeObject:obj];
         }
     }];
