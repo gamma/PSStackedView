@@ -663,7 +663,8 @@ enum {
         {
             if ( [self isViewControllerVisible:(UIViewController *)obj completely:NO] )
             {
-                BOOL fullyVisible = [self isViewControllerVisible:obj completely:YES] && ![[self overlappedViewController] isEqual:obj];
+                UIViewController *nextViewController = [self nextViewController:obj];
+                BOOL fullyVisible = [self isViewControllerVisible:obj completely:YES] && (nextViewController == nil || (nextViewController != nil && ![self isViewController:obj overlappingWith:nextViewController]));
                 [self delegateIsStillVisibleViewController:(UIViewController *)obj fullyVisible:fullyVisible];
             }
             [mutableFinalViewControllers removeObject:obj];
