@@ -76,7 +76,6 @@
 
 + (PSSVContainerView *)containerViewWithController:(UIViewController *)controller; {
     PSSVContainerView *view = [[[PSSVContainerView alloc] initWithFrame:controller.view.frame] autorelease];
-    [view setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"general_landscape_background_ipad.png"]]];
     view.controller = controller;    
     return view;
 }
