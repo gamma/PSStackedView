@@ -676,8 +676,6 @@ enum {
         }
         [self delegateIsNowVisibleViewController:(UIViewController *)obj];
     }];
-    
-    [mutableFinalViewControllers release];
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -800,7 +798,7 @@ enum {
     if (state == UIGestureRecognizerStateBegan) {
         lastDragOffset_ = 0;
 
-        initialVisibleViewControllers = [[self visibleViewControllers] retain];
+        initialVisibleViewControllers = [self visibleViewControllers];
     }
     
     NSInteger offset = translatedPoint.x - lastDragOffset_;
@@ -858,7 +856,7 @@ enum {
         
         [self alignStackAnimated:YES];
         [self handleVisibleChangeFromInitionalViewControllers:initialVisibleViewControllers toFinalViewControllers:[self visibleViewControllers]];
-        [initialVisibleViewControllers release]; initialVisibleViewControllers = nil;
+        initialVisibleViewControllers = nil;
     }
 }
 
